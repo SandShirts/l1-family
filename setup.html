@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>L1 Family — Setup</title>
+<link rel="icon" href="favicon.png">
+<script src="config.js"></script>
+<style>
+body{margin:0;background:#f7f3ec;color:#1a1a1a;font:18px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.top{display:flex;align-items:center;gap:14px;background:#fff;border-bottom:3px solid #ffc43c;padding:16px}
+.top img{width:60px;height:60px;border-radius:14px}
+.top b{font-size:23px;color:#142d6e;display:block}.top span{font-weight:600;color:#444}
+.wrap{padding:14px;max-width:560px;margin:auto}
+.step{background:#fff;border:2px solid #d9d2c5;border-radius:16px;padding:16px;margin-bottom:14px}
+.step h2{margin:0 0 8px;font-size:21px;color:#142d6e}
+.step h2 i{font-style:normal;display:inline-block;width:34px;height:34px;border-radius:50%;background:#d62839;color:#fff;text-align:center;line-height:34px;margin-right:8px}
+.step p{margin:6px 0 10px;font-weight:600}
+.btn{display:block;width:100%;text-align:center;text-decoration:none;border:0;border-radius:12px;padding:14px;font:800 18px inherit;background:#142d6e;color:#fff;margin:8px 0;font-family:inherit}
+.btn.white{background:#fff;color:#142d6e;border:2px solid #142d6e}
+.note{background:#fff7d6;border-radius:10px;padding:10px 12px;font-weight:700;font-size:16px}
+.code{font-family:monospace;font-size:17px;background:#f4f1ea;padding:8px;border-radius:8px;word-break:break-all;font-weight:700}
+ol{padding-left:22px;margin:6px 0;font-weight:600}
+</style>
+</head>
+<body>
+<div class="top"><img src="icon-192.png" alt=""><div><b>L1 Family setup</b><span id="hi">Loading…</span></div></div>
+<div class="wrap" id="w"></div>
+<script>
+const API = window.L1_API, K = new URLSearchParams(location.search).get('k');
+const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function go() {
+  if (!K) { document.getElementById('hi').textContent = 'This link is missing its code. Ask Enrique for your link.'; return; }
+  let j;
+  try { j = await (await fetch(API + '?action=setup&k=' + encodeURIComponent(K))).json(); } catch (e) { document.getElementById('hi').textContent = 'No connection — try again in a minute.'; return; }
+  if (!j.ok) { document.getElementById('hi').textContent = 'This link is no longer valid. Ask Enrique for a new one.'; return; }
+  const me = j.me, appLink = new URL('index.html?k=' + encodeURIComponent(K), location.href).href;
+  const tid = me.name.trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const cfg = {_type: 'configuration', mode: 3, url: j.api + '?ot=1&k=' + K, deviceId: 'phone', tid: tid, username: me.name.toLowerCase().replace(/\s+/g, ''),
+    monitoring: 1, pubExtendedData: true, locatorDisplacement: 100, locatorInterval: 300, ignoreInaccurateLocations: 1000, cmd: false, remoteConfiguration: false};
+  const otLink = 'owntracks:///config?inline=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(cfg)))));
+  document.getElementById('hi').textContent = 'Hi ' + me.name + '! Three quick steps.';
+  document.getElementById('w').innerHTML = `
+  <div class="step"><h2><i>1</i>Put L1 on your phone</h2>
+    <p>Tap the button, then:</p>
+    ${ios ? '<ol><li>Tap the <b>Share</b> button (square with arrow)</li><li>Tap <b>Add to Home Screen</b>, then <b>Add</b></li></ol><div class="note">On iPhone, open this page in Safari first.</div>'
+          : '<ol><li>Tap <b>Install</b> on the yellow bar at the top of the app<br>(or tap ⋮ then <b>Add to Home screen</b> / <b>Install app</b>)</li></ol>'}
+    <a class="btn" href="${appLink}">Open the L1 app</a></div>
+
+  <div class="step"><h2><i>2</i>Turn on family tracking</h2>
+    <p>This lets the family map show where you are, even when the L1 app is closed.</p>
+    <a class="btn white" href="${ios ? 'https://apps.apple.com/app/owntracks/id692424691' : 'https://play.google.com/store/apps/details?id=org.owntracks.android'}">a) Get the free OwnTracks app</a>
+    <p>Open OwnTracks once, then come back here and tap:</p>
+    <a class="btn" href="${otLink}">b) Connect OwnTracks to L1</a>
+    <div class="note">When the phone asks about location, choose <b>${ios ? 'Allow While Using, then Change to Always Allow' : 'Allow all the time'}</b>.${ios ? '' : ' If asked about battery, choose <b>Allow</b> / <b>Unrestricted</b> so it keeps working.'}</div></div>
+
+  <div class="step"><h2><i>3</i>Turn on message alerts</h2>
+    <p>So your phone buzzes when family sends a message.</p>
+    <a class="btn white" href="${ios ? 'https://apps.apple.com/us/app/ntfy/id1625396347' : 'https://play.google.com/store/apps/details?id=io.heckel.ntfy'}">a) Get the free ntfy app</a>
+    ${ios ? '' : `<p>Open ntfy once, then come back here and tap:</p><a class="btn" href="ntfy://ntfy.sh/${esc(me.topic)}">b) Connect alerts to L1</a>`}
+    <p>${ios ? 'In ntfy, tap <b>+</b>, type this code exactly, then tap <b>Subscribe</b> and allow notifications:' : 'If that button doesn\'t work: in ntfy tap <b>+</b> and type this code:'}</p>
+    <div class="code">${esc(me.topic)}</div>
+    <a class="btn white" href="#" onclick="navigator.clipboard&&navigator.clipboard.writeText('${esc(me.topic)}');this.textContent='Copied ✓';return false">Copy the code</a></div>
+  <p style="text-align:center;font-weight:700">That's it! 🎉</p>`;
+}
+go();
+</script>
+</body>
+</html>

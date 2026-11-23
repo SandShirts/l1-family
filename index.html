@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>L1 Family</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="favicon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="L1">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#ffffff">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="config.js"></script>
+<style>
+:root{--navy:#142d6e;--red:#d62839;--gold:#ffc43c;--bg:#f7f3ec;--card:#fff;--line:#d9d2c5;--text:#1a1a1a;--sub:#444;--blue:#dbe7ff;--tabh:68px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:17px/1.35 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+button{font:inherit;cursor:pointer}
+input,textarea,select{font:inherit;color:var(--text)}
+#app{display:flex;flex-direction:column;height:100%;height:100dvh}
+header{display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;background:#fff;border-bottom:3px solid var(--gold)}
+header .pic{width:52px;height:52px;border-radius:50%;object-fit:cover;border:3px solid var(--navy);background:#e8e2d6;flex:none}
+header .t{flex:1;min-width:0}
+header .t b{display:block;font-size:22px;color:var(--navy);letter-spacing:.2px}
+header .t span{font-size:15px;color:var(--sub);font-weight:600}
+header .gear{width:46px;height:46px;border-radius:12px;border:2px solid var(--navy);background:#fff;color:var(--navy);font-size:22px}
+main{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;position:relative}
+nav{display:flex;background:#fff;border-top:2px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;height:var(--tabh);border:0;background:#fff;color:var(--navy);font-size:14px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative}
+nav button i{font-style:normal;font-size:25px;line-height:1}
+nav button.on{background:var(--blue);box-shadow:inset 0 4px 0 var(--navy)}
+.badge{position:absolute;top:6px;right:calc(50% - 26px);background:var(--red);color:#fff;border-radius:11px;min-width:22px;height:22px;font-size:13px;line-height:22px;padding:0 6px;font-weight:800}
+.pad{padding:14px}
+h2{font-size:19px;color:var(--navy);margin:18px 2px 10px}
+h2:first-child{margin-top:4px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.btn{border:0;border-radius:12px;padding:13px 18px;font-weight:800;font-size:17px;background:var(--navy);color:#fff}
+.btn.red{background:var(--red)} .btn.white{background:#fff;color:var(--navy);border:2px solid var(--navy)}
+.btn.wide{width:100%}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 14px;background:#fff;border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+.chip{flex:none;border:2px solid var(--navy);background:#fff;color:var(--navy);border-radius:22px;padding:7px 14px;font-weight:800;font-size:16px;position:relative}
+.chip.on{background:var(--blue)}
+.chip .n{background:var(--red);color:#fff;border-radius:10px;font-size:12px;padding:1px 7px;margin-left:6px}
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-1px;margin-right:6px;border:2px solid #fff;box-shadow:0 0 0 1px #0003}
+/* messages */
+#msgs{padding:10px 12px 8px}
+.day{text-align:center;margin:14px 0 8px}.day span{background:#ece5d8;color:#333;font-weight:700;font-size:14px;border-radius:10px;padding:3px 12px}
+.b{max-width:82%;margin:6px 0;padding:9px 13px;border-radius:16px;background:#fff;border:2px solid var(--line);white-space:pre-wrap;word-wrap:break-word}
+.b .who{font-weight:800;font-size:15px;margin-bottom:2px}
+.b .tm{font-size:13px;color:#555;font-weight:600;margin-top:3px;text-align:right}
+.b.me{margin-left:auto;background:var(--blue);border-color:#b9cdf5}
+.compose{display:flex;gap:8px;padding:10px 12px;background:#fff;border-top:2px solid var(--line)}
+.compose textarea{flex:1;border:2px solid var(--navy);border-radius:14px;padding:10px 12px;resize:none;height:48px;max-height:120px}
+.compose .btn{padding:0 18px}
+/* menu */
+.mrow{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:11px 14px;margin-bottom:8px;width:100%;text-align:left}
+.mrow.today{border-color:var(--navy);box-shadow:0 0 0 2px var(--navy) inset}
+.mrow .d{width:66px;flex:none;font-weight:800;color:var(--navy);line-height:1.15}
+.mrow .d small{display:block;font-size:14px;color:var(--sub)}
+.mrow .m{flex:1;font-weight:700;font-size:18px}
+.mrow .m.empty{color:#666;font-weight:600;font-style:italic}
+.cook{font-size:14px;font-weight:800;border-radius:12px;padding:3px 10px;color:#fff;flex:none}
+.gadd{display:flex;gap:8px;margin-bottom:10px}
+.gadd input{flex:1;border:2px solid var(--navy);border-radius:12px;padding:11px 12px}
+.gitem{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:6px;font-weight:700;font-size:18px}
+.gitem .box{width:30px;height:30px;border-radius:8px;border:3px solid var(--navy);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900}
+.gitem.done{color:#666}.gitem.done .t{text-decoration:line-through}.gitem.done .box{background:#2e7d32;border-color:#2e7d32}
+.gitem .t{flex:1}
+.gitem .x{border:0;background:none;font-size:22px;color:var(--red);font-weight:800}
+/* tracker */
+#map{height:42vh;min-height:260px;border-bottom:3px solid var(--gold)}
+.pin{width:42px;height:42px;border-radius:50%;color:#fff;font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;border:3px solid #fff;box-shadow:0 2px 6px #0006}
+.pcard{display:flex;gap:12px;align-items:center}
+.pcard .av{width:48px;height:48px;border-radius:50%;color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+.pcard .i{flex:1;min-width:0}.pcard .i b{font-size:18px}
+.pcard .where{font-weight:700;color:#222;margin-top:2px}
+.pcard .when{font-size:15px;color:var(--sub);font-weight:600}
+.warn{color:var(--red);font-weight:800}
+/* calendar */
+.mhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.mhead b{font-size:20px;color:var(--navy)}
+.mhead button{width:46px;height:42px;border-radius:12px;border:2px solid var(--navy);background:#fff;color:var(--navy);font-size:22px;font-weight:900}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:8px}
+.grid .wd{text-align:center;font-size:13px;font-weight:800;color:var(--navy);padding:2px 0}
+.grid .c{min-height:48px;border-radius:10px;border:0;background:#f4f1ea;font-weight:800;font-size:16px;padding:4px 0 2px;display:flex;flex-direction:column;align-items:center;gap:3px;color:#222}
+.grid .c.o{background:none;color:#999}
+.grid .c.t{box-shadow:inset 0 0 0 2px var(--red)}
+.grid .c.s{background:var(--blue);box-shadow:inset 0 0 0 2px var(--navy)}
+.grid .ds{display:flex;gap:2px}.grid .ds i{width:7px;height:7px;border-radius:50%}
+.ev{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:#fff;border:2px solid var(--line);border-left-width:8px;border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.ev .tm{width:78px;flex:none;font-weight:800;color:var(--navy);font-size:15px}
+.ev .tt{font-weight:800;font-size:18px}
+.ev .wh{font-size:14px;font-weight:700;color:var(--sub);margin-top:2px}
+.none{color:#555;font-weight:600;padding:6px 2px 12px}
+/* modal */
+#ov{position:fixed;inset:0;background:#0007;display:none;align-items:flex-end;justify-content:center;z-index:1000}
+#ov.show{display:flex}
+#mod{background:#fff;width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));border-top:5px solid var(--gold)}
+#mod h3{margin:0 0 12px;font-size:21px;color:var(--navy)}
+.fld{margin-bottom:12px}.fld label{display:block;font-weight:800;margin-bottom:5px;color:#222}
+.fld input,.fld textarea,.fld select{width:100%;border:2px solid var(--navy);border-radius:12px;padding:11px 12px;background:#fff}
+.row2{display:flex;gap:10px}.row2>*{flex:1}
+.acts{display:flex;gap:10px;margin-top:14px}.acts .btn{flex:1}
+.pick{display:flex;flex-wrap:wrap;gap:8px}
+.pick button{border:2px solid var(--navy);background:#fff;border-radius:20px;padding:7px 14px;font-weight:800;color:var(--navy)}
+.pick button.on{color:#fff}
+.sw{width:40px;height:40px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px #0003}
+.sw.on{box-shadow:0 0 0 4px var(--navy)}
+.big{font-size:18px;font-weight:700;margin:4px 0 6px}
+.link{word-break:break-all;background:#f4f1ea;border-radius:10px;padding:10px;font-weight:700;font-size:15px}
+.installbar{background:#fff7d6;border-bottom:2px solid var(--gold);padding:10px 14px;font-weight:700;display:flex;gap:10px;align-items:center}
+.installbar span{flex:1}
+#busy{position:fixed;top:calc(env(safe-area-inset-top) + 70px);left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-weight:800;border-radius:20px;padding:7px 16px;display:none;z-index:2000}
+.photo-full{width:100%;border-radius:14px}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <img class="pic" id="hpic" alt="" onclick="showPhoto()">
+    <div class="t"><b>Latoison Family</b><span id="hsub">&nbsp;</span></div>
+    <button class="gear" onclick="openFamily()" aria-label="Family">⚙︎</button>
+  </header>
+  <div id="inst"></div>
+  <main id="main"><div class="pad">Loading…</div></main>
+  <div id="compose"></div>
+  <nav id="nav">
+    <button data-t="msg"><i>💬</i>Messages<span class="badge" id="bmsg" style="display:none"></span></button>
+    <button data-t="menu"><i>🍽️</i>Menu</button>
+    <button data-t="map"><i>📍</i>Tracker</button>
+    <button data-t="cal"><i>📅</i>Calendar</button>
+  </nav>
+</div>
+<div id="ov" onclick="if(event.target.id==='ov'&&!modalLocked)closeModal()"><div id="mod"></div></div>
+<div id="busy">Saving…</div>
+<script>
+const API = window.L1_API;
+const qs = new URLSearchParams(location.search);
+let K = qs.get('k');
+try { if (K) localStorage.setItem('l1k', K); else K = localStorage.getItem('l1k'); } catch (e) {}
+let S = null, M = {}, tab = 'msg', chat = 'all', calMonth = null, calSel = null, map = null, markers = {}, modalLocked = false, lastMsgCount = -1;
+try { tab = localStorage.getItem('l1tab') || 'msg'; } catch (e) {}
+const PAL = ['#1f4fbf','#c2185b','#2e7d32','#e65100','#6a1b9a','#00838f','#ad1457','#5d4037','#c62828','#0277bd'];
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ini = n => String(n || '?').trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+const pad2 = n => ('0' + n).slice(-2);
+const ymd = d => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+const pdate = s => { const p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); };
+const DN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MNF = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const ampm = hm => { if (!hm) return ''; const t = hm.split(':').map(Number); return ((t[0] + 11) % 12 + 1) + ':' + pad2(t[1]) + (t[0] < 12 ? ' AM' : ' PM'); };
+const clock = ts => { const d = new Date(+ts); return ampm(pad2(d.getHours()) + ':' + pad2(d.getMinutes())); };
+function dayLabel(d) { const t = new Date(); t.setHours(0,0,0,0); const x = new Date(d); x.setHours(0,0,0,0); const df = Math.round((x - t) / 864e5);
+  if (df === 0) return 'Today'; if (df === -1) return 'Yesterday'; if (df === 1) return 'Tomorrow'; return DN[x.getDay()] + ', ' + MN[x.getMonth()] + ' ' + x.getDate(); }
+function ago(ts) { const s = (Date.now() - +ts) / 1000; if (s < 90) return 'just now'; if (s < 3600) return Math.round(s / 60) + ' min ago';
+  if (s < 86400) return Math.round(s / 3600) + ' hr ago'; return Math.round(s / 86400) + ' days ago'; }
+
+/* ---------- server ---------- */
+async function load(quiet) {
+  if (!K) return noKey();
+  const ae = document.activeElement;
+  if (quiet && ae && ae.id === 'gin' && ae.value) return;
+  try {
+    const r = await fetch(API + '?action=state&k=' + encodeURIComponent(K));
+    const j = await r.json();
+    if (j.error === 'badkey') return noKey();
+    setState(j);
+  } catch (e) { if (!quiet && !S) $('#main').innerHTML = '<div class="pad"><div class="card warn">Can\'t reach the family server. Check your internet and pull down / reopen the app.</div></div>'; }
+}
+async function post(action, data, silent) {
+  if (!silent) $('#busy').style.display = 'block';
+  try {
+    const r = await fetch(API, {method: 'POST', body: JSON.stringify(Object.assign({k: K, action}, data || {}))});
+    const j = await r.json();
+    if (j.state) setState(j.state);
+    if (j.error) msgBox(j.error);
+    return j;
+  } catch (e) { msgBox('That didn\'t go through — no connection to the family server. Please try again.'); return {error: 1}; }
+  finally { $('#busy').style.display = 'none'; }
+}
+function setState(j) {
+  S = j; M = {}; S.members.forEach(m => M[m.id] = m);
+  $('#hsub').textContent = 'Hi, ' + S.me.name;
+  photo();
+  render();
+}
+function noKey() {
+  $('#main').innerHTML = '<div class="pad"><div class="card"><div class="big">This app opens from your personal link.</div>Ask Enrique to send you your L1 link, then open it on this phone.</div></div>';
+}
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => { tab = b.dataset.t; try { localStorage.setItem('l1tab', tab); } catch (e) {} render(true); });
+function render(tabChanged) {
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.t === tab));
+  if (!S) return;
+  if (tab !== 'msg') $('#compose').innerHTML = '';
+  if (tab === 'msg') rMsg(tabChanged); else if (tab === 'menu') rMenu(); else if (tab === 'map') rMap(tabChanged); else rCal();
+  badges();
+}
+
+/* ---------- messages ---------- */
+function seen() { try { return JSON.parse(localStorage.getItem('l1seen') || '{}'); } catch (e) { return {}; } }
+function setSeen(o) { try { localStorage.setItem('l1seen', JSON.stringify(o)); } catch (e) {} }
+const chatOf = m => m.to === 'all' ? 'all' : (m.from === S.me.id ? m.to : m.from);
+function unread() { const sn = seen(), u = {}; S.messages.forEach(m => { if (m.from === S.me.id) return; const c = chatOf(m); if (+m.ts > (sn[c] || 0)) u[c] = (u[c] || 0) + 1; }); return u; }
+function badges() { const u = unread(); let t = 0; Object.values(u).forEach(v => t += v); const b = $('#bmsg'); b.style.display = t ? '' : 'none'; b.textContent = t; }
+function rMsg(force) {
+  const list = S.messages.filter(m => chatOf(m) === chat);
+  const sn = seen(); if (list.length) { sn[chat] = Math.max(sn[chat] || 0, ...list.map(m => +m.ts)); setSeen(sn); }
+  const u = unread();
+  const others = S.members.filter(m => m.id !== S.me.id);
+  let h = '<div class="chips">' + [{id: 'all', name: 'Family'}].concat(others).map(m =>
+    `<button class="chip ${chat === m.id ? 'on' : ''}" onclick="chat='${m.id}';render(true)">${m.id === 'all' ? '👪 ' : '<span class="dot" style="background:' + m.color + '"></span>'}${esc(m.name)}${u[m.id] ? '<span class="n">' + u[m.id] + '</span>' : ''}</button>`).join('') + '</div><div id="msgs">';
+  let last = '';
+  if (!list.length) h += '<div class="none" style="text-align:center;padding:30px">No messages yet. Say hi! 👋</div>';
+  list.forEach(m => {
+    const dl = dayLabel(+m.ts); if (dl !== last) { h += `<div class="day"><span>${dl}</span></div>`; last = dl; }
+    const mine = m.from === S.me.id, f = M[m.from] || {name: '?', color: '#555'};
+    h += `<div class="b ${mine ? 'me' : ''}">${mine || chat !== 'all' ? '' : `<div class="who" style="color:${f.color}">${esc(f.name)}</div>`}${esc(m.text)}<div class="tm">${clock(m.ts)}</div></div>`;
+  });
+  h += '</div>';
+  const main = $('#main'), atBottom = main.scrollHeight - main.scrollTop - main.clientHeight < 80;
+  const draft = $('#mtext') ? $('#mtext').value : '';
+  main.innerHTML = h;
+  if (!$('#mtext')) {
+    const to = chat === 'all' ? 'the family' : (M[chat] || {}).name;
+    $('#compose').innerHTML = `<div class="compose"><textarea id="mtext" placeholder="Message ${esc(to)}" oninput="this.style.height='48px';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea><button class="btn" onclick="send()">Send</button></div>`;
+    $('#mtext').value = draft;
+  }
+  const to = chat === 'all' ? 'the family' : (M[chat] || {}).name; $('#mtext').placeholder = 'Message ' + to;
+  if (force || atBottom || list.length !== lastMsgCount) main.scrollTop = main.scrollHeight;
+  lastMsgCount = list.length;
+}
+async function send() {
+  const ta = $('#mtext'), t = ta.value.trim(); if (!t) return;
+  ta.value = ''; ta.style.height = '48px';
+  S.messages.push({id: 'tmp', ts: String(Date.now()), from: S.me.id, to: chat, text: t}); rMsg(true);
+  await post('send', {to: chat, text: t}, true);
+}
+
+/* ---------- menu ---------- */
+function rMenu() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const mm = {}; S.menu.forEach(x => mm[x.date] = x);
+  let h = '<div class="pad"><h2>🍽️ Dinner plans</h2>';
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(today); d.setDate(d.getDate() + i); const k = ymd(d), x = mm[k] || {}, c = M[x.cook];
+    h += `<button class="mrow ${i === 0 ? 'today' : ''}" onclick="editMenu('${k}')"><div class="d">${i === 0 ? 'Tonight' : DN[d.getDay()]}<small>${MN[d.getMonth()]} ${d.getDate()}</small></div>
+      <div class="m ${x.meal ? '' : 'empty'}">${x.meal ? esc(x.meal) : 'Tap to plan'}</div>${c ? `<span class="cook" style="background:${c.color}">${esc(c.name)} cooks</span>` : (x.cook === 'out' ? '<span class="cook" style="background:#555">Eating out</span>' : '')}</button>`;
+    if (i === 6) h += '<h2>Next week</h2>';
+  }
+  const g = S.grocery.slice().sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0) || +a.ts - +b.ts);
+  h += `<h2>🛒 Grocery list</h2><div class="gadd"><input id="gin" placeholder="Add item (use commas for several)" onkeydown="if(event.key==='Enter')addG()"><button class="btn" onclick="addG()">Add</button></div>`;
+  if (!g.length) h += '<div class="none">The list is empty.</div>';
+  g.forEach(x => h += `<div class="gitem ${x.done ? 'done' : ''}"><div class="box" onclick="togG('${x.id}')">${x.done ? '✓' : ''}</div><div class="t" onclick="togG('${x.id}')">${esc(x.text)}</div><button class="x" onclick="delG('${x.id}')" aria-label="Remove">✕</button></div>`);
+  if (g.some(x => x.done)) h += '<button class="btn white wide" style="margin-top:6px" onclick="post(\'grocClear\')">Remove checked items</button>';
+  $('#main').innerHTML = h + '</div>';
+}
+function editMenu(k) {
+  const x = S.menu.find(m => m.date === k) || {}, d = pdate(k); let cook = x.cook || '';
+  openModal(`<h3>Dinner — ${dayLabel(d)}</h3><div class="fld"><label>What's for dinner?</label><input id="meal" value="${esc(x.meal || '')}" placeholder="e.g. Tacos"></div>
+    <div class="fld"><label>Who's cooking?</label><div class="pick" id="cookp">${S.members.map(m => `<button data-id="${m.id}" style="border-color:${m.color};color:${m.color}">${esc(m.name)}</button>`).join('')}<button data-id="out">Eating out</button></div></div>
+    <div class="acts"><button class="btn white" onclick="closeModal()">Cancel</button><button class="btn" id="msave">Save</button></div>`);
+  const paint = () => document.querySelectorAll('#cookp button').forEach(b => { const on = b.dataset.id === cook, m = M[b.dataset.id]; b.classList.toggle('on', on); b.style.background = on ? (m ? m.color : '#555') : '#fff'; b.style.color = on ? '#fff' : (m ? m.color : '#142d6e'); });
+  document.querySelectorAll('#cookp button').forEach(b => b.onclick = () => { cook = cook === b.dataset.id ? '' : b.dataset.id; paint(); }); paint();
+  $('#msave').onclick = async () => { const meal = $('#meal').value.trim(); closeModal(); const i = S.menu.findIndex(m => m.date === k); const o = {date: k, meal, cook}; if (i >= 0) S.menu[i] = o; else S.menu.push(o); rMenu(); await post('menuSet', o, true); };
+  setTimeout(() => $('#meal').focus(), 50);
+}
+async function addG() { const t = $('#gin').value.trim(); if (!t) return; $('#gin').value = ''; await post('grocAdd', {text: t}); setTimeout(() => $('#gin') && $('#gin').focus(), 50); }
+async function togG(id) { const x = S.grocery.find(g => g.id === id); if (x) { x.done = x.done ? '' : '1'; rMenu(); } await post('grocToggle', {id}, true); }
+async function delG(id) { S.grocery = S.grocery.filter(g => g.id !== id); rMenu(); await post('grocDelete', {id}, true); }
+
+/* ---------- tracker ---------- */
+function geoCache() { try { return JSON.parse(localStorage.getItem('l1geo') || '{}'); } catch (e) { return {}; } }
+async function placeName(lat, lon) {
+  const key = (+lat).toFixed(4) + ',' + (+lon).toFixed(4), c = geoCache(); if (c[key]) return c[key];
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&lat=${lat}&lon=${lon}`);
+    const j = await r.json(), a = j.address || {};
+    const name = [[a.house_number, a.road].filter(Boolean).join(' '), a.town || a.city || a.village || a.suburb || a.hamlet || a.county].filter(Boolean).join(', ') || j.display_name || '';
+    c[key] = name; try { localStorage.setItem('l1geo', JSON.stringify(c)); } catch (e) {} return name;
+  } catch (e) { return ''; }
+}
+function rMap(first) {
+  const L0 = S.locations || {};
+  if (!$('#map')) {
+    if (map) { try { map.remove(); } catch (e) {} }
+    $('#main').innerHTML = '<div id="map"></div><div class="pad" id="plist"></div>';
+    map = L.map('map', {zoomControl: true, attributionControl: true}).setView([39.92, -75.39], 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '© OpenStreetMap'}).addTo(map);
+    markers = {}; first = true;
+  }
+  const pts = [];
+  let h = '';
+  S.members.forEach(m => {
+    const l = L0[m.id];
+    if (l && l.lat) {
+      const ll = [+l.lat, +l.lon]; pts.push(ll);
+      const icon = L.divIcon({className: '', html: `<div class="pin" style="background:${m.color}">${ini(m.name)}</div>`, iconSize: [42, 42], iconAnchor: [21, 21]});
+      if (markers[m.id]) markers[m.id].setLatLng(ll).setIcon(icon); else markers[m.id] = L.marker(ll, {icon}).addTo(map);
+    }
+    const mine = m.id === S.me.id, old = l && Date.now() - +l.ts > 6 * 3600e3;
+    h += `<div class="card pcard" onclick="${l && l.lat ? `map.flyTo([${l.lat},${l.lon}],16)` : (mine ? 'openSetup()' : '')}"><div class="av" style="background:${m.color}">${ini(m.name)}</div><div class="i"><b>${esc(m.name)}${mine ? ' (you)' : ''}</b>
+      ${l && l.lat ? `<div class="where" data-ll="${l.lat},${l.lon}">📍 Finding address…</div><div class="when ${old ? 'warn' : ''}">Updated ${ago(l.ts)}${l.batt !== '' && l.batt != null ? ' · 🔋 ' + l.batt + '%' : ''}${l.src === 'app' ? ' · from app' : ''}</div>`
+        : `<div class="when warn">${mine ? 'Tracking not set up — tap to set it up' : 'Tracking not set up yet'}</div>`}</div></div>`;
+  });
+  h += `<button class="btn wide" onclick="shareLoc(true)">📍 Update my location now</button>
+        <button class="btn white wide" style="margin-top:10px" onclick="openSetup()">Set up all-day tracking on this phone</button>`;
+  $('#plist').innerHTML = h;
+  document.querySelectorAll('.where[data-ll]').forEach(async el => { const [a, b] = el.dataset.ll.split(','); const n = await placeName(a, b); el.textContent = '📍 ' + (n || (+a).toFixed(4) + ', ' + (+b).toFixed(4)); });
+  setTimeout(() => map.invalidateSize(), 50);
+  if (first && pts.length) { if (pts.length === 1) map.setView(pts[0], 15); else map.fitBounds(pts, {padding: [40, 40], maxZoom: 15}); }
+}
+function shareLoc(manual) {
+  if (!navigator.geolocation) { if (manual) msgBox('This phone\'s browser can\'t share location.'); return; }
+  navigator.geolocation.getCurrentPosition(p => post('loc', {lat: p.coords.latitude, lon: p.coords.longitude, acc: Math.round(p.coords.accuracy)}, !manual),
+    e => { if (manual) msgBox('Location is turned off for this app. Turn on Location for your browser in the phone settings, then try again.'); }, {enableHighAccuracy: true, timeout: 15000, maximumAge: 60000});
+}
+async function autoLoc() { try { const p = await navigator.permissions.query({name: 'geolocation'}); if (p.state === 'granted') shareLoc(false); } catch (e) {} }
+
+/* ---------- calendar ---------- */
+function evColor(e) { const w = (e.who || '').split(',').filter(Boolean); if (w.length === 1 && M[w[0]]) return M[w[0]].color; return '#142d6e'; }
+function whoText(e) { const w = (e.who || '').split(',').filter(Boolean); if (!w.length || w.length === S.members.length) return 'Everyone'; return w.map(i => (M[i] || {}).name).filter(Boolean).join(', '); }
+const evSort = (a, b) => a.date.localeCompare(b.date) || (a.allDay ? -1 : 0) - (b.allDay ? -1 : 0) || (a.start || '').localeCompare(b.start || '');
+function evCard(e, showDate) {
+  return `<button class="ev" style="border-left-color:${evColor(e)}" onclick="editEv('${e.id}')"><div class="tm">${showDate ? dayLabel(pdate(e.date)) + '<br>' : ''}${e.allDay ? 'All day' : ampm(e.start)}</div><div><div class="tt">${esc(e.title)}</div><div class="wh">${esc(whoText(e))}${e.notes ? ' · ' + esc(e.notes) : ''}</div></div></button>`;
+}
+function rCal() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  if (!calMonth) calMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  if (!calSel) calSel = ymd(today);
+  const byDay = {}; S.events.forEach(e => (byDay[e.date] = byDay[e.date] || []).push(e));
+  const first = new Date(calMonth), start = new Date(first); start.setDate(1 - first.getDay());
+  let h = `<div class="pad"><div class="mhead"><button onclick="calMonth.setMonth(calMonth.getMonth()-1);rCal()">‹</button><b>${MNF[calMonth.getMonth()]} ${calMonth.getFullYear()}</b><button onclick="calMonth.setMonth(calMonth.getMonth()+1);rCal()">›</button></div><div class="grid">`;
+  DN.forEach(d => h += `<div class="wd">${d[0]}</div>`);
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(start); d.setDate(start.getDate() + i); const k = ymd(d), evs = byDay[k] || [];
+    if (i === 35 && d.getMonth() !== calMonth.getMonth()) break;
+    h += `<button class="c ${d.getMonth() !== calMonth.getMonth() ? 'o' : ''} ${+d === +today ? 't' : ''} ${k === calSel ? 's' : ''}" onclick="calSel='${k}';rCal()">${d.getDate()}<span class="ds">${evs.slice(0, 3).map(e => `<i style="background:${evColor(e)}"></i>`).join('')}</span></button>`;
+  }
+  h += '</div>';
+  const sel = (byDay[calSel] || []).sort(evSort);
+  h += `<h2>${dayLabel(pdate(calSel))}</h2>` + (sel.length ? sel.map(e => evCard(e)).join('') : '<div class="none">Nothing planned.</div>');
+  h += `<button class="btn red wide" onclick="editEv(null)">＋ Add to calendar</button>`;
+  const up = S.events.filter(e => e.date >= ymd(today)).sort(evSort).slice(0, 12);
+  h += '<h2>Coming up</h2>' + (up.length ? up.map(e => evCard(e, true)).join('') : '<div class="none">Nothing coming up.</div>');
+  $('#main').innerHTML = h + '</div>';
+}
+function editEv(id) {
+  const e = id ? S.events.find(x => x.id === id) : {date: calSel, allDay: '', start: '17:00', end: '18:00', who: '', notes: '', title: ''};
+  let who = (e.who || '').split(',').filter(Boolean);
+  openModal(`<h3>${id ? 'Edit event' : 'Add to calendar'}</h3>
+    <div class="fld"><label>What</label><input id="et" value="${esc(e.title)}" placeholder="e.g. Cole basketball practice"></div>
+    <div class="fld"><label>Date</label><input id="ed" type="date" value="${e.date}"></div>
+    <div class="fld"><label><input type="checkbox" id="ea" ${e.allDay ? 'checked' : ''} style="width:auto;transform:scale(1.4);margin-right:10px"> All day</label></div>
+    <div class="row2" id="etimes"><div class="fld"><label>Starts</label><input id="es" type="time" value="${e.start || '17:00'}"></div><div class="fld"><label>Ends</label><input id="ee" type="time" value="${e.end || ''}"></div></div>
+    <div class="fld"><label>Who</label><div class="pick" id="ewho">${S.members.map(m => `<button data-id="${m.id}">${esc(m.name)}</button>`).join('')}</div></div>
+    <div class="fld"><label>Notes</label><textarea id="en" rows="2">${esc(e.notes)}</textarea></div>
+    <div class="acts">${id ? '<button class="btn white" id="edel" style="color:#d62839;border-color:#d62839">Delete</button>' : '<button class="btn white" onclick="closeModal()">Cancel</button>'}<button class="btn" id="esave">Save</button></div>`);
+  const paint = () => document.querySelectorAll('#ewho button').forEach(b => { const m = M[b.dataset.id], on = who.includes(b.dataset.id); b.style.borderColor = m.color; b.style.background = on ? m.color : '#fff'; b.style.color = on ? '#fff' : m.color; });
+  document.querySelectorAll('#ewho button').forEach(b => b.onclick = () => { const i = who.indexOf(b.dataset.id); if (i >= 0) who.splice(i, 1); else who.push(b.dataset.id); paint(); }); paint();
+  const tog = () => $('#etimes').style.display = $('#ea').checked ? 'none' : 'flex'; $('#ea').onchange = tog; tog();
+  $('#es').onchange = () => { const s = $('#es').value, en = $('#ee').value; if (s && (!en || en <= s)) { const t = s.split(':').map(Number), m = Math.min(t[0] * 60 + t[1] + 60, 1439); $('#ee').value = pad2(Math.floor(m / 60)) + ':' + pad2(m % 60); } };
+  $('#esave').onclick = async () => {
+    const o = {id: id || '', title: $('#et').value.trim(), date: $('#ed').value, allDay: $('#ea').checked, start: $('#es').value, end: $('#ee').value, who, notes: $('#en').value.trim()};
+    if (!o.title) return $('#et').focus(); if (!o.date) return $('#ed').focus();
+    closeModal(); calSel = o.date; const r = await post('evSave', o); if (r.ok) msgBox('✅ ' + r.msg);
+  };
+  if (id) $('#edel').onclick = () => confirmBox('Delete "' + e.title + '"? It will also be removed from the calendar.', async () => { const r = await post('evDelete', {id}); if (r.ok) msgBox('✅ ' + r.msg); });
+  if (!id) setTimeout(() => $('#et').focus(), 50);
+}
+
+/* ---------- family / settings ---------- */
+function openFamily() {
+  if (!S) return;
+  openModal(`<h3>👪 Family</h3>${S.members.map(m => `<button class="mrow" onclick="editMember('${m.id}')"><span class="dot" style="background:${m.color};width:22px;height:22px"></span><div class="m">${esc(m.name)}${m.id === S.me.id ? ' (you)' : ''}</div><span style="color:#142d6e;font-weight:800">Edit ›</span></button>`).join('')}
+    <button class="btn red wide" onclick="addMember()">＋ Add a person</button>
+    <h2>This phone</h2>
+    <button class="btn white wide" onclick="openSetup()">Tracking & alerts setup</button>
+    <button class="btn white wide" style="margin-top:10px" onclick="pickPhoto()">Change the family photo</button>
+    <button class="btn white wide" style="margin-top:10px" onclick="post('testAlert').then(r=>r.ok&&msgBox('Test alert sent. If this phone didn\\'t buzz, open Tracking & alerts setup and do step 3.'))">Send a test alert to this phone</button>
+    <div class="acts"><button class="btn" onclick="closeModal()">Close</button></div>`);
+}
+function editMember(id) {
+  const m = M[id]; let color = m.color;
+  openModal(`<h3>Edit ${esc(m.name)}</h3><div class="fld"><label>Name</label><input id="mn" value="${esc(m.name)}"></div>
+    <div class="fld"><label>Color</label><div class="pick" id="mc">${PAL.map(c => `<button class="sw" data-c="${c}" style="background:${c}"></button>`).join('')}</div></div>
+    ${id !== S.me.id ? `<button class="btn white wide" onclick="sendLink('${id}')">Send ${esc(m.name)} their setup link</button>` : ''}
+    <div class="acts"><button class="btn white" onclick="openFamily()">Back</button><button class="btn" id="msv">Save</button></div>`);
+  const paint = () => document.querySelectorAll('#mc button').forEach(b => b.classList.toggle('on', b.dataset.c === color));
+  document.querySelectorAll('#mc button').forEach(b => b.onclick = () => { color = b.dataset.c; paint(); }); paint();
+  $('#msv').onclick = async () => { const r = await post('memberEdit', {id, name: $('#mn').value.trim(), color}); if (r.ok) openFamily(); };
+}
+function addMember() {
+  openModal(`<h3>Add a person</h3><div class="fld"><label>Name</label><input id="nn" placeholder="e.g. Grandma"></div>
+    <div class="acts"><button class="btn white" onclick="openFamily()">Back</button><button class="btn" id="nsv">Add</button></div>`);
+  setTimeout(() => $('#nn').focus(), 50);
+  $('#nsv').onclick = async () => { const n = $('#nn').value.trim(); if (!n) return; const r = await post('addMember', {name: n}); if (r.ok) showLink(r.newMember.name, r.setupLink, true); };
+}
+async function sendLink(id) { const r = await post('setupLink', {id}); if (r.ok) showLink(r.name, r.setupLink); }
+function showLink(name, link, isNew) {
+  const text = `Hi ${name}! Here's your link for our family app (L1). Open it on your phone and follow the 3 steps: ${link}`;
+  openModal(`<h3>${isNew ? '✅ ' + esc(name) + ' was added' : esc(name) + '\'s setup link'}</h3><p class="big">Send ${esc(name)} this link. It's their personal link — only send it to them.</p><div class="link">${esc(link)}</div>
+    <div class="acts"><button class="btn" id="shr">Text / share it</button></div><div class="acts"><button class="btn white" onclick="openFamily()">Done</button></div>`);
+  $('#shr').onclick = async () => { if (navigator.share) { try { await navigator.share({text}); } catch (e) {} } else { location.href = 'sms:?&body=' + encodeURIComponent(text); } };
+}
+function openSetup() { location.href = 'setup.html?k=' + encodeURIComponent(K); }
+function photoData() { try { return localStorage.getItem('l1photo') || ''; } catch (e) { return ''; } }
+async function photo() {
+  const have = (() => { try { return localStorage.getItem('l1photov') || ''; } catch (e) { return ''; } })();
+  if (S.photoVer && S.photoVer !== have) {
+    try { const j = await (await fetch(API + '?action=photo&k=' + encodeURIComponent(K))).json();
+      try { localStorage.setItem('l1photo', j.data || ''); localStorage.setItem('l1photov', S.photoVer); } catch (e) {} } catch (e) {}
+  }
+  const d = photoData(), im = $('#hpic'); if (d) im.src = d; im.style.visibility = d ? 'visible' : 'hidden';
+}
+function pickPhoto() {
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
+  inp.onchange = () => { const f = inp.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { const im = new Image(); im.onload = async () => {
+    const w = Math.min(900, im.width), h = Math.round(im.height * w / im.width), c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(im, 0, 0, w, h);
+    const res = await post('photoSet', {data: c.toDataURL('image/jpeg', 0.8)}); if (res.ok) msgBox('✅ ' + res.msg); }; im.src = r.result; }; r.readAsDataURL(f); };
+  inp.click();
+}
+function showPhoto() { if (!photoData()) return; openModal('<img class="photo-full" src="' + photoData() + '" alt=""><div class="acts"><button class="btn" onclick="closeModal()">Close</button></div>'); }
+
+/* ---------- boxes ---------- */
+function openModal(h, lock) { modalLocked = !!lock; $('#mod').innerHTML = h; $('#ov').classList.add('show'); }
+function closeModal() { modalLocked = false; $('#ov').classList.remove('show'); $('#mod').innerHTML = ''; }
+function msgBox(t) { openModal(`<div class="big">${esc(t)}</div><div class="acts"><button class="btn" onclick="closeModal()">OK</button></div>`, true); }
+function confirmBox(t, yes) { openModal(`<div class="big">${esc(t)}</div><div class="acts"><button class="btn white" onclick="closeModal()">No</button><button class="btn red" id="cyes">Yes</button></div>`, true); $('#cyes').onclick = () => { closeModal(); yes(); }; }
+
+/* ---------- install banner ---------- */
+let deferredInstall = null;
+const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; instBar(); });
+function instBar() {
+  if (standalone || !K) return;
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  if (deferredInstall) $('#inst').innerHTML = '<div class="installbar"><span>Put L1 on your home screen</span><button class="btn" onclick="deferredInstall.prompt()">Install</button></div>';
+  else if (ios) $('#inst').innerHTML = '<div class="installbar"><span>To put L1 on your home screen: tap the Share button <b>⬆︎</b>, then <b>Add to Home Screen</b>.</span></div>';
+}
+window.addEventListener('appinstalled', () => $('#inst').innerHTML = '');
+
+/* ---------- start ---------- */
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+render(); load(); instBar(); autoLoc();
+setInterval(() => { if (!document.hidden && !$('#ov').classList.contains('show')) load(true); }, 12000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { load(true); autoLoc(); } });
+</script>
+</body>
+</html>
