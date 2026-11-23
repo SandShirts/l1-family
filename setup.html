@@ -38,7 +38,7 @@ async function go() {
   const me = j.me, appLink = new URL('index.html?k=' + encodeURIComponent(K), document.baseURI).href;
   const tid = me.name.trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
   const cfg = {_type: 'configuration', mode: 3, url: API + '?ot=1&k=' + K, deviceId: 'phone', tid: tid, username: me.name.toLowerCase().replace(/\s+/g, ''),
-    monitoring: 1, pubExtendedData: true, locatorDisplacement: 100, locatorInterval: 300, ignoreInaccurateLocations: 1000, cmd: false, remoteConfiguration: false};
+    monitoring: 1, ping: 30, pubExtendedData: true, locatorDisplacement: 100, locatorInterval: 300, ignoreInaccurateLocations: 1000, cmd: false, remoteConfiguration: false};
   const otLink = 'owntracks:///config?inline=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(cfg)))));
   document.getElementById('hi').textContent = 'Hi ' + me.name + '! Three quick steps.';
   document.getElementById('w').innerHTML = `

@@ -305,9 +305,9 @@ function rMap(first) {
       const icon = L.divIcon({className: '', html: `<div class="pin" style="background:${m.color}">${ini(m.name)}</div>`, iconSize: [42, 42], iconAnchor: [21, 21]});
       if (markers[m.id]) markers[m.id].setLatLng(ll).setIcon(icon); else markers[m.id] = L.marker(ll, {icon}).addTo(map);
     }
-    const mine = m.id === S.me.id, old = l && Date.now() - +l.ts > 6 * 3600e3;
+    const mine = m.id === S.me.id, old = l && Date.now() - +l.ts > 2 * 3600e3;
     h += `<div class="card pcard" onclick="${l && l.lat ? `map.flyTo([${l.lat},${l.lon}],16)` : (mine ? 'openSetup()' : '')}"><div class="av" style="background:${m.color}">${ini(m.name)}</div><div class="i"><b>${esc(m.name)}${mine ? ' (you)' : ''}</b>
-      ${l && l.lat ? `<div class="where" data-ll="${l.lat},${l.lon}">📍 Finding address…</div><div class="when ${old ? 'warn' : ''}">Updated ${ago(l.ts)}${l.batt !== '' && l.batt != null ? ' · 🔋 ' + l.batt + '%' : ''}${l.src === 'app' ? ' · from app' : ''}</div>`
+      ${l && l.lat ? `<div class="where" data-ll="${l.lat},${l.lon}">📍 Finding address…</div><div class="when ${old ? 'warn' : ''}">${old && l.src === 'tracker' ? '⚠️ Tracking stopped — last update ' : 'Updated '}${ago(l.ts)}${l.batt !== '' && l.batt != null ? ' · 🔋 ' + l.batt + '%' : ''}${l.src === 'app' ? ' · from app' : ''}</div>`
         : `<div class="when warn">${mine ? 'Tracking not set up — tap to set it up' : 'Tracking not set up yet'}</div>`}</div></div>`;
   });
   h += `<button class="btn wide" onclick="shareLoc(true)">📍 Update my location now</button>

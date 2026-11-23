@@ -271,3 +271,9 @@ function push_(list, title, body, tag) {
   });
   if (reqs.length) { try { UrlFetchApp.fetchAll(reqs); } catch (e) {} }
 }
+
+/* ---------- "tracking went quiet" alert (time trigger every 15 minutes) ---------- */
+var WATCH = ['Cole', 'Ethan'];
+var PARENTS = ['Enrique', 'Stephanie'];
+var QUIET_HOURS = 2;
+// checkQuiet(): see live script — alerts parents via ntfy when a watched phone stops reporting for QUIET_HOURS, and again when it comes back.
