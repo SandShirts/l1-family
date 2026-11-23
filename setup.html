@@ -35,7 +35,7 @@ async function go() {
   let j;
   try { j = await (await fetch(API + '?action=setup&k=' + encodeURIComponent(K))).json(); } catch (e) { document.getElementById('hi').textContent = 'No connection — try again in a minute.'; return; }
   if (!j.ok) { document.getElementById('hi').textContent = 'This link is no longer valid. Ask Enrique for a new one.'; return; }
-  const me = j.me, appLink = new URL('index.html?k=' + encodeURIComponent(K), location.href).href;
+  const me = j.me, appLink = new URL('index.html?k=' + encodeURIComponent(K), document.baseURI).href;
   const tid = me.name.trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
   const cfg = {_type: 'configuration', mode: 3, url: j.api + '?ot=1&k=' + K, deviceId: 'phone', tid: tid, username: me.name.toLowerCase().replace(/\s+/g, ''),
     monitoring: 1, pubExtendedData: true, locatorDisplacement: 100, locatorInterval: 300, ignoreInaccurateLocations: 1000, cmd: false, remoteConfiguration: false};
